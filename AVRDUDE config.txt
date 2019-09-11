@@ -1,0 +1,5 @@
+-U lfuse:w:0x62:m -U hfuse:w:0xD7:m -U flash:w:"$(ProjectDir)Debug\$(TargetName).hex":i -C "C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf" -v -v -e -p t85 -c arduino -P COM3 -b 19200
+
+
+// NO FUSE WRITING //
+-U flash:w:"$(ProjectDir)Debug\$(TargetName).hex":i -C "C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf" -v -v -e -p t85 -c arduino -P COM3 -b 19200
