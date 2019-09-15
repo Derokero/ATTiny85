@@ -11,7 +11,7 @@
 #include "LCD_I2C.h"
 
 uint8_t debounce(uint8_t PBx);
-char *intToStr(uint8_t num);
+char *intToStr(uint16_t num);
 
 int main(){
 	
@@ -19,6 +19,13 @@ int main(){
 	MCUCR &= ~(1<<PUD);
 	DDRB &= ~(1<<PB2);
 	PORTB |= (1<<PB2);
+	
+	// ADC 
+	ADMUX |= (0b0011);	// Select ADC3 (PB3)
+	ADCSRA |= (0b010);	// Select prescaler of 4
+	ADCSRA |= (1<<ADATE);	// Enable ADC auto trigger
+	ADCSRA |= (1<<ADEN);	// Enable ADC
+	ADCSRA |= (1<<ADSC);	// Start conversion	
 	
 	
 	START();
@@ -29,28 +36,34 @@ int main(){
 	sendToLCD(0b00001100, 0, 0);	// Display Control: Turn on display
 	sendToLCD(0b00000001, 0, 0);	// Clear display
 	sendToLCD(0b00000110, 0, 0);	// Entry Mode: Increment
-	sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
-	
-	uint8_t counter = 0, block = 0;
 	
 	while(1){
-			if(!debounce(PB2) && !block){
-				block = 1;
-				LCD_Write(intToStr(counter++));
-				sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
-			}
-			else if(debounce(PB2) && block){
-				block = 0;
-			}	
-		}
+		uint16_t ADCVal = (uint16_t)ADCL | (uint16_t)ADCH << 8;	// Combine 2 bytes to allow a 10 bit value (Make sure to read ADCL and then ADCH, otherwise the ADC data register won't be updated)
+		LCD_Write(intToStr(ADCVal));
+		delaySec();
+		sendToLCD(0b00000001, 0, 0);	// Clear display
+	}
+	
+// 	uint8_t counter = 0, block = 0;
+// 	
+// 	while(1){
+// 		if(!debounce(PB2) && !block){
+// 			block = 1;
+// 			LCD_Write(intToStr(counter++));
+// 			sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
+// 		}
+// 		else if(debounce(PB2) && block){
+// 			block = 0;
+// 		}	
+// 	}
 		
 	STOP();
 }
 
-// Integer (uint8_t) to string
-char *intToStr(uint8_t num){
-	static char str[10];		// Define string buffer
-	volatile uint8_t count = 0, temp = num;
+// Integer (uint16_t) to string
+char *intToStr(uint16_t num){
+	static char str[10];	// Define string buffer
+	volatile uint16_t count = 0, temp = num;
 	
 	// Count number of digits (using do-while because number of digits can't be 0)
 	do{
@@ -60,10 +73,11 @@ char *intToStr(uint8_t num){
 	
 	// Convert to string
 	for(uint8_t i = 0; i < count; i++){
-		str[(count-1) - i] = (num % 10) + '0';		// Get most significant digit and convert to char
+		str[(count-1) - i] = (num % 10) + '0';	// Get most significant digit and convert to char
 		num /= 10;
 	}
 	
+	str[count] = '\0';		// Add a null terminator at the end (removes the need to clear the static array each conversion)
 	return str;		// Return string
 }
 
