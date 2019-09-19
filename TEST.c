@@ -12,6 +12,7 @@
 
 uint8_t debounce(uint8_t PBx);
 char *intToStr(uint16_t num);
+void genChar(uint8_t *customChar, uint8_t index);
 
 int main(){
 	
@@ -27,6 +28,7 @@ int main(){
 	ADCSRA |= (1<<ADEN);	// Enable ADC
 	ADCSRA |= (1<<ADSC);	// Start conversion	
 	
+
 	
 	START();
 	sendAddress(0x27, 0);
@@ -36,13 +38,86 @@ int main(){
 	sendToLCD(0b00001100, 0, 0);	// Display Control: Turn on display
 	sendToLCD(0b00000001, 0, 0);	// Clear display
 	sendToLCD(0b00000110, 0, 0);	// Entry Mode: Increment
+	sendToLCD(0b01000000, 0, 0);	// Set CGRAM address to 0
+	
+	
+	// Custom character testing
+	uint8_t cChar1[] = {
+		0b01110,
+		0b01010,
+		0b01110,
+		0b10100,
+		0b11111,
+		0b00101,
+		0b01010,
+		0b10001
+	};
+	
+	uint8_t cChar2[] = {
+		0b01110,
+		0b01010,
+		0b01110,
+		0b00101,
+		0b11111,
+		0b10100,
+		0b01010,
+		0b10001
+	};
+
+	uint8_t cChar3[] = {
+		0b01110,
+		0b01010,
+		0b01110,
+		0b10100,
+		0b01111,
+		0b00101,
+		0b01010,
+		0b10010
+	};
+	
+	uint8_t cChar4[] = {
+		0b01110,
+		0b01010,
+		0b01110,
+		0b00101,
+		0b11111,
+		0b10100,
+		0b01010,
+		0b01001
+	};
+	
+	genChar(cChar1, 0);
+	genChar(cChar2, 1);
+	genChar(cChar3, 3);
+	genChar(cChar4, 4);
 	
 	while(1){
-		uint16_t ADCVal = (uint16_t)ADCL | (uint16_t)ADCH << 8;	// Combine 2 bytes to allow a 10 bit value (Make sure to read ADCL and then ADCH, otherwise the ADC data register won't be updated)
-		LCD_Write(intToStr(ADCVal));
-		delaySec();
-		sendToLCD(0b00000001, 0, 0);	// Clear display
+		sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
+		LCD_Write_Char(0);
+		sendToLCD(0b10000010, 0, 0);	// Set DDRAM to 0x02
+		LCD_Write_Char(4);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
+		sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
+		LCD_Write_Char(1);
+		sendToLCD(0b10000010, 0, 0);	// Set DDRAM to 0x02
+		LCD_Write_Char(3);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
+		delayus(UINT16_MAX);
 	}
+
+	// End of custom character testing
+	
+// 	while(1){
+// 		uint16_t ADCVal = (uint16_t)ADCL | (uint16_t)ADCH << 8;	// Combine 2 bytes to allow a 10 bit value (Make sure to read ADCL and then ADCH, otherwise the ADC data register won't be updated)
+// 		LCD_Write(intToStr(ADCVal));
+// 		delaySec();
+// 		sendToLCD(0b00000001, 0, 0);	// Clear display
+// 	}
 	
 // 	uint8_t counter = 0, block = 0;
 // 	
@@ -58,6 +133,15 @@ int main(){
 // 	}
 		
 	STOP();
+}
+
+// Character generation
+void genChar(uint8_t *customChar, uint8_t index){
+	sendToLCD(0b01000000 | (index << 3), 0, 0);	// Set CGRAM address (character index starts from bit 3)
+	
+	for(uint8_t i = 0; i < 8; i++){
+		sendToLCD(*customChar++, 1, 0);		// Insert custom pattern
+	}
 }
 
 // Integer (uint16_t) to string
