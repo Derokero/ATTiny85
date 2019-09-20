@@ -42,7 +42,7 @@ int main(){
 	
 	
 	// Custom character testing
-	uint8_t cChar1[] = {
+	uint8_t cChar0[] = {
 		0b01110,
 		0b01010,
 		0b01110,
@@ -53,7 +53,7 @@ int main(){
 		0b10001
 	};
 	
-	uint8_t cChar2[] = {
+	uint8_t cChar1[] = {
 		0b01110,
 		0b01010,
 		0b01110,
@@ -64,7 +64,7 @@ int main(){
 		0b10001
 	};
 
-	uint8_t cChar3[] = {
+	uint8_t cChar2[] = {
 		0b01110,
 		0b01010,
 		0b01110,
@@ -75,7 +75,7 @@ int main(){
 		0b10010
 	};
 	
-	uint8_t cChar4[] = {
+	uint8_t cChar3[] = {
 		0b01110,
 		0b01010,
 		0b01110,
@@ -86,16 +86,17 @@ int main(){
 		0b01001
 	};
 	
-	genChar(cChar1, 0);
-	genChar(cChar2, 1);
+	genChar(cChar0, 0);
+	genChar(cChar1, 1);
+	genChar(cChar2, 2);
 	genChar(cChar3, 3);
-	genChar(cChar4, 4);
+	
 	
 	while(1){
 		sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
 		LCD_Write_Char(0);
 		sendToLCD(0b10000010, 0, 0);	// Set DDRAM to 0x02
-		LCD_Write_Char(4);
+		LCD_Write_Char(3);
 		delayus(UINT16_MAX);
 		delayus(UINT16_MAX);
 		delayus(UINT16_MAX);
@@ -103,7 +104,7 @@ int main(){
 		sendToLCD(0b10000000, 0, 0);	// Set DDRAM to 0x00
 		LCD_Write_Char(1);
 		sendToLCD(0b10000010, 0, 0);	// Set DDRAM to 0x02
-		LCD_Write_Char(3);
+		LCD_Write_Char(2);
 		delayus(UINT16_MAX);
 		delayus(UINT16_MAX);
 		delayus(UINT16_MAX);
